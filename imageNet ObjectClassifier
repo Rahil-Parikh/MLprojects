@@ -1,0 +1,152 @@
+from tensorflow.keras import regularizers
+import tensorflow as tf
+import os
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D, Flatten
+from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+In [7]:
+inception = InceptionV3(
+        weights='imagenet', include_top=False, input_shape=(224,224,3))
+
+for layer in inception.layers:
+    layer.trainable = False
+    
+x_layer = inception.output
+x_layer = Flatten()(x_layer)
+x_layer = Dense(1024, activation='relu')(x_layer)
+x_layer = Dropout(0.3)(x_layer)
+
+predictions = Dense(7, activation='softmax')(x_layer)
+
+model = Model(inputs=inception.input, outputs=predictions)
+In [10]:
+model.compile(optimizer = Adam(lr=0.0001), 
+              loss = 'sparse_categorical_crossentropy', 
+              metrics = ['accuracy'])
+
+# model.compile(optimizer=Adam(lr=0.001),
+#                       loss='categorical_crossentropy', metrics=['categorical_accuracy'])
+In [23]:
+# -----------------------------------------add paths
+train_dir = "../data/train/"
+validation_dir = "../data/test/"
+
+
+
+train_datagen = ImageDataGenerator(rescale = 1./255.,
+                                   rotation_range = 40,
+                                   width_shift_range = 0.2,
+                                   height_shift_range = 0.2,
+                                   shear_range = 0.2,
+                                   zoom_range = 0.2,
+                                   horizontal_flip = True)
+
+
+test_datagen = ImageDataGenerator( rescale = 1.0/255. )
+
+
+train_generator = train_datagen.flow_from_directory(train_dir,
+                                                    batch_size = 20,
+                                                    class_mode = 'binary', 
+                                                    target_size = (224, 224))     
+
+
+validation_generator =  test_datagen.flow_from_directory( validation_dir,
+                                                          batch_size  = 20,
+                                                          class_mode  = 'binary', 
+                                                          target_size = (224, 224))
+Found 2358 images belonging to 7 classes.
+Found 479 images belonging to 7 classes.
+In [24]:
+checkpoint_path="../checkpoint/cp.ckpt"
+checkpoint_dir=os.path.dirname(checkpoint_path)
+
+cp_callback=tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
+                                              save_weights_only=True,
+                                              verbose=1)
+
+history=model.fit_generator(train_generator,
+                            steps_per_epoch=100,
+                            epochs=15,
+                            validation_data =validation_generator,
+                            validation_steps=50,
+                            verbose=2,
+                           callbacks=[cp_callback])
+Epoch 1/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00001: saving model to ../checkpoint/cp.ckpt
+100/100 - 210s - loss: 1.7181 - accuracy: 0.6982 - val_loss: 0.3729 - val_accuracy: 0.8768
+Epoch 2/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00002: saving model to ../checkpoint/cp.ckpt
+100/100 - 225s - loss: 0.5312 - accuracy: 0.8098 - val_loss: 0.3820 - val_accuracy: 0.8706
+Epoch 3/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00003: saving model to ../checkpoint/cp.ckpt
+100/100 - 222s - loss: 0.4132 - accuracy: 0.8549 - val_loss: 0.4838 - val_accuracy: 0.8476
+Epoch 4/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00004: saving model to ../checkpoint/cp.ckpt
+100/100 - 231s - loss: 0.4208 - accuracy: 0.8554 - val_loss: 0.3343 - val_accuracy: 0.9040
+Epoch 5/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00005: saving model to ../checkpoint/cp.ckpt
+100/100 - 252s - loss: 0.3586 - accuracy: 0.8714 - val_loss: 0.3715 - val_accuracy: 0.9061
+Epoch 6/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00006: saving model to ../checkpoint/cp.ckpt
+100/100 - 232s - loss: 0.3675 - accuracy: 0.8695 - val_loss: 0.3934 - val_accuracy: 0.8810
+Epoch 7/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00007: saving model to ../checkpoint/cp.ckpt
+100/100 - 234s - loss: 0.3319 - accuracy: 0.8804 - val_loss: 0.4066 - val_accuracy: 0.8852
+Epoch 8/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00008: saving model to ../checkpoint/cp.ckpt
+100/100 - 237s - loss: 0.3628 - accuracy: 0.8784 - val_loss: 0.3593 - val_accuracy: 0.8914
+Epoch 9/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00009: saving model to ../checkpoint/cp.ckpt
+100/100 - 232s - loss: 0.3406 - accuracy: 0.8889 - val_loss: 0.3187 - val_accuracy: 0.9040
+Epoch 10/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00010: saving model to ../checkpoint/cp.ckpt
+100/100 - 233s - loss: 0.3000 - accuracy: 0.8954 - val_loss: 0.3874 - val_accuracy: 0.8852
+Epoch 11/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00011: saving model to ../checkpoint/cp.ckpt
+100/100 - 231s - loss: 0.2850 - accuracy: 0.8965 - val_loss: 0.3111 - val_accuracy: 0.9061
+Epoch 12/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00012: saving model to ../checkpoint/cp.ckpt
+100/100 - 241s - loss: 0.2709 - accuracy: 0.9035 - val_loss: 0.3094 - val_accuracy: 0.9102
+Epoch 13/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00013: saving model to ../checkpoint/cp.ckpt
+100/100 - 240s - loss: 0.2724 - accuracy: 0.9079 - val_loss: 0.3242 - val_accuracy: 0.9019
+Epoch 14/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00014: saving model to ../checkpoint/cp.ckpt
+100/100 - 233s - loss: 0.2607 - accuracy: 0.9114 - val_loss: 0.3229 - val_accuracy: 0.9061
+Epoch 15/15
+WARNING:tensorflow:Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches (in this case, 50 batches). You may need to use the repeat() function when building your dataset.
+
+Epoch 00015: saving model to ../checkpoint/cp.ckpt
+100/100 - 238s - loss: 0.2757 - accuracy: 0.9069 - val_loss: 0.3435 - val_accuracy: 0.9102
+In [ ]:
